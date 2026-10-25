@@ -1,0 +1,9 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // This no-billing build does not use Firebase Storage. Deny all access if a bucket exists.
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -1,0 +1,169 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "workspaceInfo": {
+      "$wid": {
+        ".read": "auth != null && root.child('workspaceMembers').child($wid).child(auth.uid).val() === true",
+        ".write": "auth != null && ((!data.exists() && newData.child('ownerUid').val() === auth.uid && newData.child('name').isString()) || (root.child('workspaceMembers').child($wid).child(auth.uid).val() === true && root.child('members').child($wid).child(auth.uid).child('role').val() === 'owner') || (!newData.exists() && data.child('ownerUid').val() === auth.uid && root.child('workspaceMembers').child($wid).child(auth.uid).val() !== true))"
+      }
+    },
+    "users": {
+      "$uid": {
+        "workspaces": {
+          ".read": "auth != null && auth.uid === $uid",
+          "$wid": {
+            ".write": "auth != null && auth.uid === $uid && root.child('workspaceMembers').child($wid).child(auth.uid).val() === true && newData.child('workspaceId').val() === $wid"
+          }
+        }
+      }
+    },
+    "profiles": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && auth.uid === $uid && newData.child('email').val() === auth.token.email"
+      }
+    },
+    "workspaceMembers": {
+      "$wid": {
+        "$uid": {
+          ".read": "auth != null && auth.uid === $uid",
+          ".write": "auth != null && auth.uid === $uid && newData.val() === true && root.child('members').child($wid).child($uid).exists()",
+          ".validate": "newData.val() === true"
+        }
+      }
+    },
+    "members": {
+      "$wid": {
+        ".read": "auth != null && root.child('workspaceMembers').child($wid).child(auth.uid).val() === true",
+        "$uid": {
+          ".write": "auth != null && auth.uid === $uid && ((root.child('workspaceMembers').child($wid).child(auth.uid).val() === true) || (!data.exists() && root.child('workspaceInfo').child($wid).child('ownerUid').val() === auth.uid && root.child('members').child($wid).numChildren() < 5) || (!data.exists() && newData.child('invitationId').isString() && root.child('workspaceInvitations').child($wid).child(newData.child('invitationId').val()).child('status').val() === 'pending' && root.child('workspaceInvitations').child($wid).child(newData.child('invitationId').val()).child('email').val() === auth.token.email && root.child('workspaceInvitations').child($wid).child(newData.child('invitationId').val()).child('expiresAt').val() > now && root.child('members').child($wid).numChildren() < 5) || (data.exists() && data.child('role').val() === 'member' && newData.child('invitationId').val() === data.child('invitationId').val() && root.child('workspaceInvitations').child($wid).child(data.child('invitationId').val()).child('status').val() === 'pending' && root.child('workspaceInvitations').child($wid).child(data.child('invitationId').val()).child('email').val() === auth.token.email && root.child('workspaceInvitations').child($wid).child(data.child('invitationId').val()).child('expiresAt').val() > now))",
+          ".validate": "newData.hasChildren(['uid','email','displayName','role','color']) && newData.child('uid').val() === $uid && newData.child('displayName').isString() && newData.child('displayName').val().length <= 60 && newData.child('email').val() === auth.token.email && newData.child('color').isString() && ((data.exists() && newData.child('role').val() === data.child('role').val()) || (!data.exists() && newData.child('role').val() === 'owner' && root.child('workspaceInfo').child($wid).child('ownerUid').val() === $uid) || (!data.exists() && newData.child('role').val() === 'member' && newData.child('invitationId').isString() && root.child('workspaceInvitations').child($wid).child(newData.child('invitationId').val()).child('status').val() === 'pending' && root.child('workspaceInvitations').child($wid).child(newData.child('invitationId').val()).child('email').val() === auth.token.email && root.child('workspaceInvitations').child($wid).child(newData.child('invitationId').val()).child('expiresAt').val() > now)"
+        }
+      }
+    },
+    "workspaceInvitations": {
+      "$wid": {
+        ".read": "auth != null && root.child('workspaceMembers').child($wid).child(auth.uid).val() === true",
+        "$token": {
+          ".read": true,
+          ".write": "auth != null && ((!data.exists() && root.child('workspaceMembers').child($wid).child(auth.uid).val() === true && root.child('members').child($wid).child(auth.uid).child('role').val() === 'owner' && newData.child('status').val() === 'pending' && newData.child('workspaceId').val() === $wid && newData.child('invitedByUid').val() === auth.uid && root.child('members').child($wid).numChildren() + root.child('workspaceInvitations').child($wid).numChildren() < 5) || (data.exists() && !newData.exists() && root.child('workspaceMembers').child($wid).child(auth.uid).val() === true && root.child('members').child($wid).child(auth.uid).child('role').val() === 'owner') || (data.exists() && !newData.exists() && data.child('status').val() === 'pending' && data.child('email').val() === auth.token.email && root.child('members').child($wid).child(auth.uid).child('invitationId').val() === $token))",
+          ".validate": "newData.hasChildren(['id','workspaceId','email','status','createdAt','expiresAt']) && newData.child('id').val() === $token && newData.child('workspaceId').val() === $wid && newData.child('email').isString() && newData.child('email').val().length <= 254 && newData.child('status').val() === 'pending' && newData.child('expiresAt').isNumber()"
+        }
+      }
+    },
+    "projects": {
+      "$wid": {
+        ".read": "auth != null && root.child('workspaceMembers').child($wid).child(auth.uid).val() === true",
+        ".write": "auth != null && root.child('workspaceMembers').child($wid).child(auth.uid).val() === true"
+      }
+    },
+    "files": {
+      "$wid": {
+        ".read": "auth != null && root.child('workspaceMembers').child($wid).child(auth.uid).val() === true",
+        ".write": "auth != null && root.child('workspaceMembers').child($wid).child(auth.uid).val() === true",
+        "$fileId": {
+          ".validate": "newData.hasChildren(['name','type','size','uploadedByUid']) && newData.child('name').isString() && newData.child('name').val().length <= 180 && newData.child('size').isNumber() && newData.child('size').val() <= 512000 && newData.child('uploadedByUid').isString()"
+        }
+      }
+    },
+    "fileContents": {
+      "$wid": {
+        ".read": "auth != null && root.child('workspaceMembers').child($wid).child(auth.uid).val() === true",
+        "$fileId": {
+          ".write": "auth != null && root.child('workspaceMembers').child($wid).child(auth.uid).val() === true && ((!data.exists() && root.child('files').child($wid).child($fileId).child('uploadedByUid').val() === auth.uid && newData.child('uid').val() === auth.uid) || (!newData.exists() && root.child('files').child($wid).child($fileId).exists()) || (data.exists() && data.child('uid').val() === auth.uid && newData.child('uid').val() === auth.uid))",
+          ".validate": "newData.hasChildren(['uid','size','type','dataUrl']) && newData.child('uid').val() === auth.uid && newData.child('size').isNumber() && newData.child('size').val() <= 512000 && newData.child('type').isString() && newData.child('dataUrl').isString() && newData.child('dataUrl').val().length <= 700000"
+        }
+      }
+    },
+    "folders": {
+      "$wid": {
+        ".read": "auth != null && root.child('workspaceMembers').child($wid).child(auth.uid).val() === true",
+        ".write": "auth != null && root.child('workspaceMembers').child($wid).child(auth.uid).val() === true"
+      }
+    },
+    "roughbook": {
+      "$wid": {
+        ".read": "auth != null && root.child('workspaceMembers').child($wid).child(auth.uid).val() === true",
+        ".write": "auth != null && root.child('workspaceMembers').child($wid).child(auth.uid).val() === true"
+      }
+    },
+    "bookmarks": {
+      "$wid": {
+        ".read": "auth != null && root.child('workspaceMembers').child($wid).child(auth.uid).val() === true",
+        ".write": "auth != null && root.child('workspaceMembers').child($wid).child(auth.uid).val() === true"
+      }
+    },
+    "history": {
+      "$wid": {
+        ".read": "auth != null && root.child('workspaceMembers').child($wid).child(auth.uid).val() === true",
+        ".write": "auth != null && root.child('workspaceMembers').child($wid).child(auth.uid).val() === true"
+      }
+    },
+    "activity": {
+      "$wid": {
+        ".read": "auth != null && root.child('workspaceMembers').child($wid).child(auth.uid).val() === true",
+        ".write": "auth != null && root.child('workspaceMembers').child($wid).child(auth.uid).val() === true"
+      }
+    },
+    "chats": {
+      "$wid": {
+        "$threadId": {
+          "messages": {
+            ".read": "auth != null && root.child('workspaceMembers').child($wid).child(auth.uid).val() === true && ($threadId === 'group' || root.child('chatAccess').child($wid).child($threadId).child(auth.uid).val() === true)",
+            "$messageId": {
+              ".write": "auth != null && root.child('workspaceMembers').child($wid).child(auth.uid).val() === true && ($threadId === 'group' || root.child('chatAccess').child($wid).child($threadId).child(auth.uid).val() === true) && ((!data.exists() && newData.child('uid').val() === auth.uid) || (data.exists() && !newData.exists() && data.child('uid').val() === auth.uid) || (data.exists() && newData.exists() && newData.child('uid').val() === data.child('uid').val() && newData.child('threadId').val() === data.child('threadId').val() && newData.child('text').val() === data.child('text').val() && newData.child('createdAt').val() === data.child('createdAt').val() && newData.child('name').val() === data.child('name').val() && newData.child('color').val() === data.child('color').val()))",
+              ".validate": "newData.hasChildren(['uid','threadId','text','createdAt']) && newData.child('uid').isString() && newData.child('text').isString() && newData.child('text').val().length <= 5000 && (!newData.child('attachment').exists() || (newData.child('attachment').child('size').isNumber() && newData.child('attachment').child('size').val() <= 153600 && newData.child('attachment').child('dataUrl').isString() && newData.child('attachment').child('dataUrl').val().length <= 220000))",
+              "uid": {
+                ".validate": "!data.exists() ? newData.val() === auth.uid : newData.val() === data.val()"
+              },
+              "threadId": {
+                ".validate": "!data.exists() || newData.val() === data.val()"
+              },
+              "text": {
+                ".validate": "!data.exists() || newData.val() === data.val()"
+              },
+              "createdAt": {
+                ".validate": "!data.exists() || newData.val() === data.val()"
+              },
+              "name": {
+                ".validate": "!data.exists() || newData.val() === data.val()"
+              },
+              "color": {
+                ".validate": "!data.exists() || newData.val() === data.val()"
+              }
+            }
+          }
+        }
+      }
+    },
+    "chatAccess": {
+      "$wid": {
+        "$threadId": {
+          ".write": "auth != null && root.child('workspaceMembers').child($wid).child(auth.uid).val() === true && !data.exists() && newData.child(auth.uid).val() === true",
+          "$uid": {
+            ".read": "auth != null && auth.uid === $uid && root.child('workspaceMembers').child($wid).child(auth.uid).val() === true",
+            ".validate": "newData.val() === true && root.child('workspaceMembers').child($wid).child($uid).val() === true"
+          }
+        }
+      }
+    },
+    "presence": {
+      "$wid": {
+        ".read": "auth != null && root.child('workspaceMembers').child($wid).child(auth.uid).val() === true",
+        "$uid": {
+          ".write": "auth != null && auth.uid === $uid && root.child('workspaceMembers').child($wid).child(auth.uid).val() === true"
+        }
+      }
+    },
+    "cursors": {
+      "$wid": {
+        ".read": "auth != null && root.child('workspaceMembers').child($wid).child(auth.uid).val() === true",
+        "$uid": {
+          ".write": "auth != null && auth.uid === $uid && root.child('workspaceMembers').child($wid).child(auth.uid).val() === true",
+          ".validate": "newData.hasChildren(['x','y','name','color','active']) && newData.child('x').isNumber() && newData.child('y').isNumber() && newData.child('name').isString() && newData.child('name').val().length <= 60 && newData.child('active').isBoolean()"
+        }
+      }
+    }
+  }
+}

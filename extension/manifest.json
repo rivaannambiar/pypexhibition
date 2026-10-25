@@ -1,0 +1,10 @@
+{
+  "manifest_version": 3,
+  "name": "Roughbook clipper — Exhibition Workspace",
+  "version": "1.0.0",
+  "description": "Save selected text from a webpage into your private exhibition Roughbook.",
+  "permissions": ["contextMenus", "storage", "tabs"],
+  "background": { "service_worker": "service-worker.js" },
+  "options_page": "options.html",
+  "icons": {}
+}
